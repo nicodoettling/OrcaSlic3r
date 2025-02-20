@@ -9,7 +9,7 @@ Join our Discord community here:<br>
 <a href="https://discord.gg/P4VE9UY9gJ"><img src="https://img.shields.io/static/v1?message=Discord&logo=discord&label=&color=7289DA&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="discord logo"/> </a>
 
 <h3>About this Fork</h3> 
-This fork modifies the behaviour of slow layers: Instead of interpolating the speed up from the first layer speed to the normal speed, it sets speed and acceleration of the slow layers to the same values as those of the first layer.
+This is the standard Orca Slicer with just one modification: The behaviour of "slow layers" has been modified such that instead of interpolating the speed up from the first layer speed to the normal speed, the speed and acceleration of the slow layers are the same as for the first layer.
 
  
  <h3>🚨🚨🚨Important Security Alert🚨🚨🚨</h3> 
