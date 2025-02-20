@@ -5153,9 +5153,23 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         } else {
             acceleration = m_config.default_acceleration.value;
         }
+        
+        // Experimental Modification:
+        // for slow layers, set acceleration to that of the initial layer
+        if(m_config.slow_down_layers > 1){
+            const auto _layer = layer_id();
+            if (_layer > 0 && _layer < m_config.slow_down_layers) {
+                
+                if (m_config.initial_layer_acceleration.value > 0) {
+                    acceleration = std::min(acceleration,m_config.initial_layer_acceleration.value);
+                }
+            }
+        }
+        // End Modification
+        
         acceleration_i = (unsigned int)floor(acceleration + 0.5);
     }
-
+    
     // adjust X Y jerk
     if (m_config.default_jerk.value > 0) {
         if (this->on_first_layer() && m_config.initial_layer_jerk.value > 0) {
@@ -5263,10 +5277,15 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                     ? m_config.get_abs_value("initial_layer_speed")
                     : m_config.get_abs_value("initial_layer_infill_speed");
             if (first_layer_speed < speed) {
-                speed = std::min(
-                    speed,
-                    Slic3r::lerp(first_layer_speed, speed,
-                                 (double)_layer / m_config.slow_down_layers));
+                
+                // Experimental Modification
+                // Commented out the interpolation, slow layers behave like first layer
+                speed = std::min(speed,first_layer_speed);
+//                speed = std::min(
+//                    speed,
+//                    Slic3r::lerp(first_layer_speed, speed,
+//                                 (double)_layer / m_config.slow_down_layers));
+                // End Modification
             }
         }
     }
@@ -5982,6 +6001,20 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
             jerk_to_set = m_config.travel_jerk.value;
         }
     }
+    
+    // Experimental Modification:
+    // for slow layers, set acceleration to that of the initial layer
+    if(m_config.slow_down_layers > 1){
+        const auto _layer = layer_id();
+        if (_layer > 0 && _layer < m_config.slow_down_layers) {
+            
+            if (m_config.initial_layer_acceleration.value > 0) {
+                acceleration_to_set = std::min(acceleration_to_set,(unsigned int) floor(m_config.initial_layer_acceleration.value + 0.5));
+            }
+        }
+    }
+    // End Modification
+    
     if (m_writer.get_gcode_flavor() == gcfKlipper) {
         gcode += m_writer.set_accel_and_jerk(acceleration_to_set, jerk_to_set);
     } else {
