@@ -1,5 +1,5 @@
 
-<h1> <p "font-size:200px;"><img align="left" src="https://github.com/SoftFever/OrcaSlicer/blob/main/resources/images/OrcaSlicer.ico" width="100"> Orca Slicer</p> </h1>
+<h1> <p "font-size:200px;"><img align="left" src="https://github.com/SoftFever/OrcaSlicer/blob/main/resources/images/OrcaSlicer.ico" width="100"> Orca Slic3r</p> </h1>
 
 [![Build all](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml/badge.svg?branch=main)](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml)
 <br>Orca Slicer is an open source slicer for FDM printers. 
@@ -7,6 +7,10 @@
 
 Join our Discord community here:<br>
 <a href="https://discord.gg/P4VE9UY9gJ"><img src="https://img.shields.io/static/v1?message=Discord&logo=discord&label=&color=7289DA&logoColor=white&labelColor=&style=for-the-badge" height="35" alt="discord logo"/> </a>
+
+<h3>About this Fork</h3> 
+This fork modifies the behaviour of slow layers: Instead of interpolating the speed up from the first layer speed to the normal speed, it sets speed and acceleration of the slow layers to the same values as those of the first layer.
+
  
  <h3>🚨🚨🚨Important Security Alert🚨🚨🚨</h3> 
 
