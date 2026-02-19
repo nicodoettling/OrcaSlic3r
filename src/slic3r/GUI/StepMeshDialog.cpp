@@ -10,6 +10,7 @@
 #include "MainFrame.hpp"
 #include "Widgets/Button.hpp"
 #include "Widgets/TextInput.hpp"
+#include "Widgets/DialogButtons.hpp"
 #include <chrono>
 
 using namespace Slic3r;
@@ -81,10 +82,6 @@ StepMeshDialog::StepMeshDialog(wxWindow* parent, Slic3r::Step& file, double line
 
     Bind(wxEVT_THREAD_DONE, &StepMeshDialog::on_task_done, this);
 
-    std::string icon_path = (boost::format("%1%/images/BambuStudioTitle.ico")
-                             % Slic3r::resources_dir()).str();
-    SetIcon(wxIcon(Slic3r::encode_path(icon_path.c_str()), wxBITMAP_TYPE_ICO));
-
     SetBackgroundColour(*wxWHITE);
 
     wxBoxSizer* bSizer = new wxBoxSizer(wxVERTICAL);
@@ -120,14 +117,11 @@ StepMeshDialog::StepMeshDialog(wxWindow* parent, Slic3r::Step& file, double line
     wxBoxSizer* tips_sizer = new wxBoxSizer(wxVERTICAL);
     wxStaticText* info = new wxStaticText(this, wxID_ANY, _L("Smaller linear and angular deflections result in higher-quality transformations but increase the processing time."));
     info->SetForegroundColour(StateColor::darkModeColorFor(FONT_COLOR));
-    wxStaticText *tips = new wxStaticText(this, wxID_ANY, _L("View Wiki for more information"));
-    wxFont font(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false);
-    font.SetUnderlined(true);
-    tips->SetForegroundColour(StateColor::darkModeColorFor(wxColour(0, 151, 137)));
-    tips->SetFont(font);
-    tips->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
-        wxLaunchDefaultBrowser("https://wiki.bambulab.com/en/software/bambu-studio/step");
-    });
+
+    // ORCA standardized HyperLink
+    HyperLink *tips = new HyperLink(this, _L("Wiki Guide"), "https://www.orcaslicer.com/wiki/import_export#step");
+    tips->SetFont(::Label::Body_12);
+ 
     info->Wrap(FromDIP(400));
     tips_sizer->Add(info, 0, wxALIGN_LEFT);
     tips_sizer->Add(tips, 0, wxALIGN_LEFT);
@@ -251,7 +245,7 @@ StepMeshDialog::StepMeshDialog(wxWindow* parent, Slic3r::Step& file, double line
     wxBoxSizer* mesh_face_number_sizer = new wxBoxSizer(wxHORIZONTAL);
     wxStaticText *mesh_face_number_title = new wxStaticText(this, wxID_ANY, _L("Number of triangular facets") + ": ");
     mesh_face_number_title->SetForegroundColour(StateColor::darkModeColorFor(FONT_COLOR));
-    mesh_face_number_text = new wxStaticText(this, wxID_ANY, _L("0"));
+    mesh_face_number_text = new wxStaticText(this, wxID_ANY, "0");
     mesh_face_number_text->SetForegroundColour(StateColor::darkModeColorFor(FONT_COLOR));
     mesh_face_number_text->SetMinSize(wxSize(FromDIP(150), -1));
     mesh_face_number_sizer->Add(mesh_face_number_title, 0, wxALIGN_LEFT);
@@ -262,21 +256,14 @@ StepMeshDialog::StepMeshDialog(wxWindow* parent, Slic3r::Step& file, double line
     bSizer_button->SetMinSize(wxSize(FromDIP(100), -1));
     m_checkbox = new wxCheckBox(this, wxID_ANY, _L("Don't show again"), wxDefaultPosition, wxDefaultSize, 0);
     m_checkbox->SetForegroundColour(StateColor::darkModeColorFor(FONT_COLOR));
-    bSizer_button->Add(m_checkbox, 0, wxALIGN_LEFT);
+    bSizer_button->Add(m_checkbox, 0, wxALIGN_LEFT | wxLEFT | wxALIGN_CENTER_VERTICAL, LEFT_RIGHT_PADING);
     bSizer_button->AddStretchSpacer(1);
-    StateColor btn_bg_green(std::pair<wxColour, int>(wxColour(27, 136, 68), StateColor::Pressed), std::pair<wxColour, int>(wxColour(61, 203, 115), StateColor::Hovered),
-                            std::pair<wxColour, int>(AMS_CONTROL_BRAND_COLOUR, StateColor::Normal));
-    m_button_ok = new Button(this, _L("OK"));
-    m_button_ok->SetBackgroundColor(btn_bg_green);
-    m_button_ok->SetBorderColor(*wxWHITE);
-    m_button_ok->SetTextColor(wxColour(0xFFFFFE));
-    m_button_ok->SetFont(Label::Body_12);
-    m_button_ok->SetSize(BUTTON_SIZE);
-    m_button_ok->SetMinSize(BUTTON_SIZE);
-    m_button_ok->SetCornerRadius(FromDIP(12));
-    bSizer_button->Add(m_button_ok, 0, wxALIGN_RIGHT, BUTTON_BORDER);
 
-    m_button_ok->Bind(wxEVT_LEFT_DOWN, [this, angle_input, linear_input](wxMouseEvent& e) {
+    auto dlg_btns = new DialogButtons(this, {"OK", "Cancel"});
+
+    bSizer_button->Add(dlg_btns, 0, wxEXPAND);
+
+    dlg_btns->GetOK()->Bind(wxEVT_BUTTON, [this, angle_input, linear_input](wxCommandEvent& e) {
         stop_task();
         if (validate_number_range(angle_input->GetTextCtrl()->GetValue(), 0.01, 1) &&
             validate_number_range(linear_input->GetTextCtrl()->GetValue(), 0.001, 0.1)) {
@@ -292,24 +279,12 @@ StepMeshDialog::StepMeshDialog(wxWindow* parent, Slic3r::Step& file, double line
         SetFocusIgnoringChildren();
     });
 
-    StateColor btn_bg_white(std::pair<wxColour, int>(wxColour(206, 206, 206), StateColor::Pressed), std::pair<wxColour, int>(wxColour(238, 238, 238), StateColor::Hovered),
-                            std::pair<wxColour, int>(*wxWHITE, StateColor::Normal));
-
-    m_button_cancel = new Button(this, _L("Cancel"));
-    m_button_cancel->SetBackgroundColor(btn_bg_white);
-    m_button_cancel->SetBorderColor(wxColour(38, 46, 48));
-    m_button_cancel->SetFont(Label::Body_12);
-    m_button_cancel->SetSize(BUTTON_SIZE);
-    m_button_cancel->SetMinSize(BUTTON_SIZE);
-    m_button_cancel->SetCornerRadius(FromDIP(12));
-    bSizer_button->Add(m_button_cancel, 0, wxALIGN_RIGHT | wxLEFT, BUTTON_BORDER);
-
-    m_button_cancel->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& e) {
+    dlg_btns->GetCANCEL()->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
         stop_task();
         EndModal(wxID_CANCEL);
     });
 
-    bSizer->Add(bSizer_button, 1, wxEXPAND | wxALL, LEFT_RIGHT_PADING);
+    bSizer->Add(bSizer_button, 1, wxEXPAND);
 
     this->SetSizer(bSizer);
     update_mesh_number_text();
