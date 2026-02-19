@@ -7085,6 +7085,20 @@ std::string GCode::travel_to(const Point& point, ExtrusionRole role, std::string
             }
         }
     }
+    
+    // Experimental Modification:
+    // for slow layers, set acceleration to that of the initial layer
+    if(m_config.slow_down_layers > 1){
+        const auto _layer = layer_id();
+        if (_layer > 0 && _layer < m_config.slow_down_layers) {
+            
+            if (m_config.initial_layer_acceleration.value > 0) {
+                acceleration_to_set = std::min(acceleration_to_set,(unsigned int) floor(m_config.initial_layer_acceleration.value + 0.5));
+            }
+        }
+    }
+    // End Modification
+    
     if (m_writer.get_gcode_flavor() == gcfKlipper) {
         gcode += m_writer.set_accel_and_jerk(acceleration_to_set, jerk_to_set);
     } else {
